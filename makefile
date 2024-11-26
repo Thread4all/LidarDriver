@@ -6,23 +6,22 @@
 CC = g++
 FLAGS = -std=c++14
 
-OBJS = objs
 DEST = dest\main.exe
 # DEST = dest/main
 
-$(DEST): $(OBJS)/main.o $(OBJS)/LidarDriver.o
-	$(CC) $(FLAGS) $(OBJS)/main.o $(OBJS)/LidarDriver.o -o $(DEST)
+$(DEST): objs/main.o objs/LidarDriver.o
+	$(CC) $(FLAGS) objs/main.o objs/LidarDriver.o -o $(DEST)
 
-$(OBJS)/main.o: main.cpp
-	$(CC) $(FLAGS) -c main.cpp -o $(OBJS)/main.o
+objs/main.o: src/main.cpp
+	$(CC) $(FLAGS) -c src/main.cpp -o objs/main.o
 
-$(OBJS)/LidarDriver.o: LidarDriver.cpp include/LidarDriver.h
-	$(CC) $(FLAGS) -c LidarDriver.cpp -o $(OBJS)/LidarDriver.o
+objs/LidarDriver.o: src/LidarDriver.cpp include/LidarDriver.h
+	$(CC) $(FLAGS) -c src/LidarDriver.cpp -o objs/LidarDriver.o
 
 clean:
-	del $(OBJS)\*.o
+	del objs\*.o
 	del $(DEST)
-# rm -f $(OBJS)\*.o
+# rm -f objs\*.o
 # rm -f $(DEST)
 
 run:

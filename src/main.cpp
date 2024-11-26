@@ -1,4 +1,4 @@
-#include "include/LidarDriver.h"
+#include "../include/LidarDriver.h"
 
 int main(int argc, char **argv) {
 
