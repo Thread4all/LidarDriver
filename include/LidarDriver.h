@@ -1,13 +1,13 @@
-#ifndef LIDARDRIVER
-#define LIDARDRIVER
+#ifndef LIDARDRIVER_H
+#define LIDARDRIVER_H
 
 #include <iostream>
 #include <vector>
 
 class LidarDriver {
-	static constexpr unsigned BUFFER_DIM = 10; // random value arbitrairly chosen by asking god
+	static constexpr unsigned BUFFER_DIM = 10; // random value arbitrarily chosen by asking god
 	const double resolution;				   // angle between readings, in degrees
-	const unsigned lineLen;					   // values per lidar sweeping (can be calculated from resolution, but it's used very often and requires a division)
+	const unsigned lineLen;					   // values per lidar sweep (can be calculated from resolution, but it's used very often and requires a division)
 	unsigned bufNextLine = 0;				   // next buffer line to write data into
 	unsigned bufUsedRows = 0;				   // how many rows of the buffer contain values yet to be consumed
 	double *buf;
