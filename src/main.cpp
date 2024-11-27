@@ -45,79 +45,69 @@ std::string vtos(const std::vector<double> &vec) { // vector to string following
 	return res;
 }
 
-void print_buffer(LidarDriver &lidar, unsigned lineLen) {
-
-	const double *buf = lidar.get_buf();
-	const unsigned next = lidar.get_next_line_index(); // next line to write on
-	const unsigned last = lidar.get_last_line_index(); // oldest line written on
-
-	for (int i = 0; i < lidar.get_buf_dim(); i++) {
-
-		for (int j = 0; j < lineLen; j++) {
-			std::cout << buf[i * lineLen + j] << " ";
-		}
-		if (i == next) {
-			std::cout << "\x1b[33mNEXT\x1b[0m "; // gets printed after the line that will get written on upon the next invocation of get_scan()
-		}
-		if (i == last) {
-			std::cout << "\x1b[33mLAST\x1b[0m"; // gets printed after the oldest line in the buffer
-		}
-		std::cout << "\n";
-	}
-	std::cout << "\n\n";
-}
-
 int main(int argc, char **argv) {
 
-	double precision = 10;
+	if (argc > 1 && std::string(argv[1]) == "repl") { // repl mode, activated by running the executable passing "repl" as an argument
 
-	if (argc > 1 && std::string(argv[1]) == "repl") { // repl mode
-
+		double precision;
 		std::cout << "precision for lidar: ";
 		std::cin >> precision;
 
 		int lineLen = (int)(180 / precision) + 1;
 		LidarDriver lidar(precision);
+		std::string cmd;
 
 		while (1) {
-			std::string cmd;
 			std::cout << "\n> ";
 			std::cin >> cmd;
-			if (cmd == "help" || cmd == "h") {
-				std::cout << "h         : prints this\n";
+
+			if (cmd == "h" || cmd == "help") {
+				std::cout << "h, help   : prints this\n";
 				std::cout << "w         : write line in buffer              | calls \x1b[34mnew_scan()\x1b[0m\n";
 				std::cout << "r         : get line from buffer              | calls \x1b[34mget_scan()\x1b[0m\n";
-				// std::cout << "o         : print latest line from buffer     | calls \x1b[34mstd::cout << lidar\x1b[0m\n";
-				// std::cout << "c         : clear buffer                      | calls \x1b[34mclear_buffer()\x1b[0m\n";
+				std::cout << "o         : print latest line from buffer     | calls \x1b[34mstd::cout << lidar\x1b[0m\n";
+				std::cout << "c         : clear buffer                      | calls \x1b[34mclear_buffer()\x1b[0m\n";
 				std::cout << "d <angle> : read last buffer line at <angle>  | calls \x1b[34mget_distance(<angle>)\x1b[0m\n";
 				std::cout << "b         : prints the whole buffer           | just for debugging\n";
-            std::cout << "q         : quit\n";
+				std::cout << "q, quit   : quit\n";
+
 			} else if (cmd == "w") {
 				std::vector<double> vec = test_line(lineLen);
 				lidar.new_scan(vec);
 				std::cout << vtos(vec) << "\nadded to buffer\n";
+
 			} else if (cmd == "r") {
 				std::cout << vtos(lidar.get_scan()) << "\n";
-			} else if (cmd == "o") { // --!-- not yet implemented
+
+			} else if (cmd == "o") {
 				std::cout << lidar << "\n";
-			} else if (cmd == "c") { // --!-- not yet implemented
+
+			} else if (cmd == "c") {
 				lidar.clear_buffer();
 				std::cout << "buffer cleared\n";
+
 			} else if (cmd == "d") {
+
 				std::cin >> cmd; // recycle cmd string to contain the angle
 				std::cout << "\n"
 						  << std::to_string(lidar.get_distance(std::stod(cmd))) << "\n";
+
 			} else if (cmd == "b") {
-				print_buffer(lidar, lineLen);
+				lidar.print_buffer();
 				std::cout << "\n";
-			} else if (cmd == "q") {
+
+			} else if (cmd == "q" || cmd == "quit") {
 				return 0;
+
 			} else {
 				std::cout << "unknown command\n";
 			}
 		}
 	}
 
+	// if the program was not run in repl mode, do standard tests
+
+	double precision = 10;
 	unsigned lineLen = (int)(180 / precision) + 1;
 	LidarDriver lidar(precision);
 
@@ -136,7 +126,7 @@ int main(int argc, char **argv) {
 	lidar.new_scan(second_scan);
 
 	std::cout << "buffer after 2nd scan:\n";
-	print_buffer(lidar, lineLen);
+	lidar.print_buffer();
 
 	for (int i = 0; i < 3; i++) {
 		std::vector<double> v = random_line(lineLen);
@@ -144,7 +134,7 @@ int main(int argc, char **argv) {
 	}
 
 	std::cout << "buffer after 3 more scans:\n";
-	print_buffer(lidar, lineLen);
+	lidar.print_buffer();
 
 	first_scan_readback = lidar.get_scan();
 
@@ -155,24 +145,23 @@ int main(int argc, char **argv) {
 		}
 	}
 
-   first_scan = test_line(lineLen);
-   lidar.clear_buffer();
-   lidar.new_scan(first_scan);
+	first_scan = test_line(lineLen);
+	lidar.clear_buffer();
+	lidar.new_scan(first_scan);
 
-   // Retreiveing last scan's value at position n => d = precision * n [deg]
-   unsigned n = 3;
-   double d = precision * n;
-   double expected = first_scan[n];
-   double offsets[3] = {0, precision / 3, -precision / 3};
-   
-   std::cout << '\n';
+	// Retreiveing last scan's value at position n => d = precision * n [deg]
+	unsigned n = 3;
+	double d = precision * n;
+	double expected = first_scan[n];
+	double offsets[3] = {0, precision / 3, -precision / 3};
 
-   for (int i = 0; i < 3; i++) {
-      if (lidar.get_distance(d + offsets[i]) != expected) {
-         std::cout << "[!] get_distance failed! (offset: " << offsets[i] << ")\n";
-         continue;
-      }
-      std::cout << "[+] get_distance OK with offset: " << offsets[i] << '\n';
-   }
+	std::cout << '\n';
 
+	for (int i = 0; i < 3; i++) {
+		if (lidar.get_distance(d + offsets[i]) != expected) {
+			std::cout << "[!] get_distance failed! (offset: " << offsets[i] << ")\n";
+			continue;
+		}
+		std::cout << "[+] get_distance OK with offset: " << offsets[i] << '\n';
+	}
 }

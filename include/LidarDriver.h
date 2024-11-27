@@ -23,11 +23,7 @@ public:
 	void clear_buffer();
 	double get_distance(const double deg) const;
 
-	const unsigned get_buf_dim() const { return BUFFER_DIM; }
-	// cursed and unsafe getters that must absolutely be removed
-	const double *get_buf() const { return buf; }
-	const unsigned get_next_line_index() const { return bufNextLine; }
-	const unsigned get_last_line_index() const { return (bufNextLine - bufUsedLines + BUFFER_DIM) % BUFFER_DIM; }
+	void print_buffer() const;
 
 	// it makes no sense to declare getters for just this one helper function to use; it's easier to have it be a friend
 	friend std::ostream &operator<<(std::ostream &os, LidarDriver &lidar);
