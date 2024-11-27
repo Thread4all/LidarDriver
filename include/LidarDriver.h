@@ -22,8 +22,8 @@ public:
 	std::vector<double> get_scan();
 	void clear_buffer();
 	double get_distance(const double deg) const;
-   double *getBuf() {return buf;}
- 
+	double *get_buf() { return buf; }
+
 	// it makes no sense to declare getters for just this one helper function to use; it's easier to have it be a friend
 	friend std::ostream &operator<<(std::ostream &os, LidarDriver &lidar);
 };

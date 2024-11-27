@@ -2,7 +2,7 @@
 #include <vector>
 
 unsigned uround(double num) {
-    return (num - (unsigned) num) > .5 ? (unsigned) ++num : (unsigned) num;
+	return (num - (unsigned)num) > .5 ? (unsigned)++num : (unsigned)num;
 }
 
 void LidarDriver::new_scan(const std::vector<double> &data) {
@@ -20,39 +20,39 @@ void LidarDriver::new_scan(const std::vector<double> &data) {
 
 std::vector<double> LidarDriver::get_scan() {
 
-    std::vector<double> out(lineLen);
-    if (!bufUsedRows) {  // Returns a -1 filled vector when no row is available
-        for (int i = 0; i < lineLen; i++) {
-            out[i] = -1.0;
-        }
-        return out;
-    }
+	std::vector<double> out(lineLen);
 
-    unsigned start_index = bufUsedRows > bufNextLine
-        ? bufNextLine + (BUFFER_DIM - bufUsedRows) - 1
-        : (bufNextLine - bufUsedRows) * lineLen;
+	if (!bufUsedRows) { // Returns a -1 filled vector when no row is available
+		for (int i = 0; i < lineLen; i++) {
+			out[i] = -1.0;
+		}
+		return out;
+	}
 
-    for (int i = 0; i < lineLen; i++) {
-        out[i] = buf[start_index + i];
-    }
+	unsigned start_index = (bufUsedRows > bufNextLine ? bufNextLine - bufUsedRows + BUFFER_DIM : (bufNextLine - bufUsedRows)) * lineLen;
+	// could achieve the same with: unsigned start_index = lineLen * ((bufNextLine - bufUsedRows + BUFFER_DIM) % BUFFER_DIM)
 
-    bufUsedRows--;
+	for (int i = 0; i < lineLen; i++) {
+		out[i] = buf[start_index + i];
+	}
 
-    return out;
+	bufUsedRows--;
+
+	return out;
 }
 
 void LidarDriver::clear_buffer() {}
 
 double LidarDriver::get_distance(const double deg) const {
 
-    if (!bufNextLine && !bufUsedRows ) return -1;
+	if (!bufNextLine && !bufUsedRows) return -1;
 
-    unsigned offset = uround(deg/resolution);
+	unsigned offset = uround(deg / resolution);
 
-    unsigned row = !bufNextLine ? BUFFER_DIM - 1 : bufNextLine - 1;
-    unsigned index = row * lineLen + offset;
+	unsigned row = !bufNextLine ? BUFFER_DIM - 1 : bufNextLine - 1;
+	unsigned index = row * lineLen + offset;
 
-    return buf[index];
+	return buf[index];
 }
 
 std::ostream &operator<<(std::ostream &os, LidarDriver &lidar) {}
