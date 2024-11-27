@@ -91,6 +91,7 @@ int main(int argc, char **argv) {
 				// std::cout << "c         : clear buffer                      | calls \x1b[34mclear_buffer()\x1b[0m\n";
 				std::cout << "d <angle> : read last buffer line at <angle>  | calls \x1b[34mget_distance(<angle>)\x1b[0m\n";
 				std::cout << "b         : prints the whole buffer           | just for debugging\n";
+            std::cout << "q         : quit\n";
 			} else if (cmd == "w") {
 				std::vector<double> vec = test_line(lineLen);
 				lidar.new_scan(vec);
@@ -138,8 +139,8 @@ int main(int argc, char **argv) {
 	print_buffer(lidar, lineLen);
 
 	for (int i = 0; i < 3; i++) {
-		std::vector<double> diocancaro = random_line(lineLen);
-		lidar.new_scan(diocancaro);
+		std::vector<double> v = random_line(lineLen);
+		lidar.new_scan(v);
 	}
 
 	std::cout << "buffer after 3 more scans:\n";
@@ -153,4 +154,25 @@ int main(int argc, char **argv) {
 			// std::cout << "[!] Extraction failed!\n";
 		}
 	}
+
+   first_scan = test_line(lineLen);
+   lidar.clear_buffer();
+   lidar.new_scan(first_scan);
+
+   // Retreiveing last scan's value at position n => d = precision * n [deg]
+   unsigned n = 3;
+   double d = precision * n;
+   double expected = first_scan[n];
+   double offsets[3] = {0, precision / 3, -precision / 3};
+   
+   std::cout << '\n';
+
+   for (int i = 0; i < 3; i++) {
+      if (lidar.get_distance(d + offsets[i]) != expected) {
+         std::cout << "[!] get_distance failed! (offset: " << offsets[i] << ")\n";
+         continue;
+      }
+      std::cout << "[+] get_distance OK with offset: " << offsets[i] << '\n';
+   }
+
 }
