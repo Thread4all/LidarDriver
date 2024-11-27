@@ -8,5 +8,8 @@ $ make
 eseguire:
 $ make run
 
+eseguire in modalità repl:
+$ make repl
+
 pulire l'exe e i .o:
 $ make clean

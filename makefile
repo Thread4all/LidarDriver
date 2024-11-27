@@ -26,3 +26,6 @@ clean:
 
 run:
 	$(DEST)
+
+repl:
+	$(DEST) repl

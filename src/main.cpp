@@ -6,7 +6,7 @@ std::random_device rnd;
 std::mt19937 gen(rnd());
 std::uniform_real_distribution<double> dist(0., 10.);
 
-std::vector<double> random_line(unsigned len) {
+std::vector<double> random_line(unsigned len) { // returns len random values
 	std::vector<double> res(len);
 
 	for (int i = 0; i < len; i++) {
@@ -29,13 +29,38 @@ std::vector<double> test_line(unsigned len) { // the 1st item is how many lines 
 	return vec;
 }
 
+std::string vtos(const std::vector<double> &vec) { // vector to string following the same cursed notation as atoi et cetera
+
+	if (!vec.size()) {
+		return "[]";
+	}
+
+	std::string res = "[ ";
+
+	for (int i = 0; i < vec.size() - 1; i++) {
+		res += std::to_string(vec[i]) + ", ";
+	}
+	res += std::to_string(vec[vec.size() - 1]) + " ]";
+
+	return res;
+}
+
 void print_buffer(LidarDriver &lidar, unsigned lineLen) {
 
-	double *buf = lidar.get_buf();
+	const double *buf = lidar.get_buf();
+	const unsigned next = lidar.get_next_line_index(); // next line to write on
+	const unsigned last = lidar.get_last_line_index(); // oldest line written on
 
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < lidar.get_buf_dim(); i++) {
+
 		for (int j = 0; j < lineLen; j++) {
 			std::cout << buf[i * lineLen + j] << " ";
+		}
+		if (i == next) {
+			std::cout << "\x1b[33mNEXT\x1b[0m "; // gets printed after the line that will get written on upon the next invocation of get_scan()
+		}
+		if (i == last) {
+			std::cout << "\x1b[33mLAST\x1b[0m"; // gets printed after the oldest line in the buffer
 		}
 		std::cout << "\n";
 	}
@@ -45,6 +70,53 @@ void print_buffer(LidarDriver &lidar, unsigned lineLen) {
 int main(int argc, char **argv) {
 
 	double precision = 10;
+
+	if (argc > 1 && std::string(argv[1]) == "repl") { // repl mode
+
+		std::cout << "precision for lidar: ";
+		std::cin >> precision;
+
+		int lineLen = (int)(180 / precision) + 1;
+		LidarDriver lidar(precision);
+
+		while (1) {
+			std::string cmd;
+			std::cout << "\n> ";
+			std::cin >> cmd;
+			if (cmd == "help" || cmd == "h") {
+				std::cout << "h         : prints this\n";
+				std::cout << "w         : write line in buffer              | calls \x1b[34mnew_scan()\x1b[0m\n";
+				std::cout << "r         : get line from buffer              | calls \x1b[34mget_scan()\x1b[0m\n";
+				// std::cout << "o         : print latest line from buffer     | calls \x1b[34mstd::cout << lidar\x1b[0m\n";
+				// std::cout << "c         : clear buffer                      | calls \x1b[34mclear_buffer()\x1b[0m\n";
+				std::cout << "d <angle> : read last buffer line at <angle>  | calls \x1b[34mget_distance(<angle>)\x1b[0m\n";
+				std::cout << "b         : prints the whole buffer           | just for debugging\n";
+			} else if (cmd == "w") {
+				std::vector<double> vec = test_line(lineLen);
+				lidar.new_scan(vec);
+				std::cout << vtos(vec) << "\nadded to buffer\n";
+			} else if (cmd == "r") {
+				std::cout << vtos(lidar.get_scan()) << "\n";
+			} else if (cmd == "o") { // --!-- not yet implemented
+				std::cout << lidar << "\n";
+			} else if (cmd == "c") { // --!-- not yet implemented
+				lidar.clear_buffer();
+				std::cout << "buffer cleared\n";
+			} else if (cmd == "d") {
+				std::cin >> cmd; // recycle cmd string to contain the angle
+				std::cout << "\n"
+						  << std::to_string(lidar.get_distance(std::stod(cmd))) << "\n";
+			} else if (cmd == "b") {
+				print_buffer(lidar, lineLen);
+				std::cout << "\n";
+			} else if (cmd == "q") {
+				return 0;
+			} else {
+				std::cout << "unknown command\n";
+			}
+		}
+	}
+
 	unsigned lineLen = (int)(180 / precision) + 1;
 	LidarDriver lidar(precision);
 
