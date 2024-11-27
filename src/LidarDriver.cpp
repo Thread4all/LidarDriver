@@ -30,7 +30,6 @@ std::vector<double> LidarDriver::get_scan() {
 	}
 
 	unsigned start_index = (bufUsedLines > bufNextLine ? bufNextLine - bufUsedLines + BUFFER_DIM : (bufNextLine - bufUsedLines)) * lineLen;
-	// could achieve the same with: unsigned start_index = lineLen * ((bufNextLine - bufUsedRows + BUFFER_DIM) % BUFFER_DIM)
 
 	for (int i = 0; i < lineLen; i++) {
 		out[i] = buf[start_index + i];
@@ -45,7 +44,7 @@ void LidarDriver::clear_buffer() {}
 
 double LidarDriver::get_distance(const double deg) const {
 
-	if (!bufNextLine && !bufUsedLines) return -1; // --!-- fails if i call new_scan(), followed by get_scan(), followed by get(distance) (reads on deleted 1st line)
+	if (!bufUsedLines) return -1;
 
 	unsigned offset = uround(deg / resolution);
 
