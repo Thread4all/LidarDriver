@@ -1,6 +1,6 @@
 # good ol' make
 # switch commented out lines to cross platform
-# compile and run everything in one go:  g++ -std=c++17 -o main main.cpp LidarDriver.cpp && main
+# compile and run everything in one go:  g++ -std=c++14 -o main main.cpp LidarDriver.cpp && main
 
 # CC = clang++
 CC = g++
