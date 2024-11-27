@@ -47,6 +47,7 @@ void LidarDriver::clear_buffer() { // resetting just the indexes is enough to ma
 
 double LidarDriver::get_distance(const double deg) const {
 
+   if (deg < 0 || deg > 180) throw std::invalid_argument("input degree is not in the range (0, 180)");
 	if (!bufUsedLines) return -1;
 
 	unsigned offset = uround(deg / resolution);

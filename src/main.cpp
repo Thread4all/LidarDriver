@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
 	for (int i = 0; i < first_scan_readback.size(); i++) {
 		std::cout << first_scan_readback[i] << " , " << second_scan[i] << '\n';
 		if (first_scan_readback[i] != second_scan[i]) {
-			// std::cout << "[!] Extraction failed!\n";
+			std::cout << "\t-> [!] Mismatch found!\n";
 		}
 	}
 
